@@ -76,74 +76,42 @@ def solution():
         current_room = player.current_room
         q = Queue()
         visited = set()
-        # path = [opp_direction[traversal_path[-1]]]
         q.enqueue([player.current_room])
 
-        # print(q.size())
         while q.size() > 0:
             path = q.dequeue()
             current_room = path[-1]
-            # print(current_room.id)
-            # print(direction)
-            # print(visited)
-            # print(path)
 
             if current_room not in visited:
                 visited.add(current_room)
 
+                # if we find a node that has an unexplored path return
                 if "?" in traversal_graph[current_room.id].values():
-                    # print("path")
-                    # print(path)
                     return path[1:]
 
-                # print(current_room.id)
-                # print(current_room.get_exits())
                 for next_dir in current_room.get_exits():
+                    # add unvisited neighboring rooms to queue path
                     next_room = current_room.get_room_in_direction(next_dir)
                     if next_room not in visited:
                         path_copy = path.copy()
                         path_copy.append(next_room)
                         q.enqueue(path_copy)
 
-    def dfs():
-        current_room = player.current_room
-        s = Stack()
-        visited = set()
-        s.push([player.current_room])
-
-        while s.size() > 0:
-            path = s.pop()
-            current_room = path[-1]
-
-            if current_room not in visited:
-                visited.add(current_room)
-
-                if "?" in traversal_graph[current_room.id].values():
-                    return path[1:]
-
-                for next_dir in current_room.get_exits():
-                    next_room = current_room.get_room_in_direction(next_dir)
-                    if next_room not in visited:
-                        path_copy = path.copy()
-                        path_copy.append(next_room)
-                        s.push(path_copy)
-
+    # iterate until we've moved through all the rooms at least once
     while len(traversal_graph) < 500:
-        # print(traversal_path)
-        # print(traversal_graph)
-        # print(player.current_room.id)
-        # world.print_rooms(player.current_room)
-        # print(len(traversal_path))
-        # input("Press any key to continue")
+        # if the current room has unexplored neighbors go to one
         if "?" in traversal_graph[player.current_room.id].values():
             possible_dirs = [direction for direction,
                              status in traversal_graph[player.current_room.id].items() if status == "?"]
+            # randomly pick neighboring room
             move_dir = random.choice(possible_dirs)
             prev_room = player.current_room.id
+            # update path and graph
             player.travel(move_dir)
             traversal_path.append(move_dir)
             traversal_graph[prev_room][move_dir] = player.current_room.id
 
+            # create new graph entry if we dont have on for current room
             if player.current_room.id not in traversal_graph:
                 traversal_graph[player.current_room.id] = {}
 
@@ -151,21 +119,17 @@ def solution():
                     traversal_graph[player.current_room.id][direction] = "?"
 
             traversal_graph[player.current_room.id][opp_direction[move_dir]] = prev_room
+        # if there are no unexplored neighbors for the current room run a bfs
         else:
             bfs_path = bfs()
             if not bfs_path:
                 break
-            # print(bfs_path)
-            # prev_room = player.current_room
-            # room_to_move_to = prev_room
+            # iterate through the bfs path and move + append to travel path
             for room in bfs_path:
                 for direction, room_id in traversal_graph[player.current_room.id].items():
                     if room_id == room.id:
                         player.travel(direction)
                         traversal_path.append(direction)
-                        # world.print_rooms(player.current_room)
-                        # print(len(traversal_path))
-                        # input("Press any key to continue")
                         break
 
     # TRAVERSAL TEST - DO NOT MODIFY
@@ -188,6 +152,7 @@ def solution():
     return len(traversal_path)
 
 
+# run tests until we get a result less than 960
 lowest_solution = float("inf")
 moves = solution()
 while moves >= 960:
